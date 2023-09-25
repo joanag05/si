@@ -9,7 +9,7 @@ from si.data.dataset import Dataset
 
 
 class VarianceThreshold:
-    def __init__(self, threshold: float = 0.0) -> None:
+    def __init__(self, threshold: float = 0.0):
         """
         VarianceThreshold removes features with low variance.
 
@@ -80,4 +80,18 @@ class VarianceThreshold:
         """
         return self.fit(dataset).transform(dataset)
     
-    
+if __name__ == '__main__':
+
+    from si.data.dataset import Dataset
+
+    dataset = Dataset(X=np.array([[0, 2, 0, 3],
+                                  [0, 1, 4, 3],
+                                  [0, 1, 1, 3]]),
+                      y=np.array([0, 1, 0]),
+                      features=["f1", "f2", "f3", "f4"],
+                      label="y")
+
+    selector = VarianceThreshold(threshold=0.9)
+    selector = selector.fit(dataset)
+    dataset = selector.transform(dataset)
+    print(dataset.features)    
