@@ -7,7 +7,7 @@ from typing import Callable
 import numpy as np
 
 from si.data.dataset import Dataset
-from si.feature_selection.statistics import f_classification
+from si.statistics.f_classification import f_classification
 
 
 class SelectKBest:
