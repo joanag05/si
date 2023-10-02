@@ -198,6 +198,22 @@ class Dataset:
         y = np.random.randint(0, n_classes, n_samples)
         return cls(X, y, features=features, label=label)
 
+    def dropna(self):
+
+        no_nan = np.logical_not(np.any(np.isnan(self.X), axis=1))
+
+        self.X = self.X[no_nan, :]
+        self.y = self.y[no_nan]
+
+
+    def fillna(self, value):
+
+        self.X = np.nan_to_num(self.X, nan = value)
+
+    def remove_by_index(self, index):
+
+        self.X = np.delete(self.X, index, axis=0)
+        self.y = np.delete(self.y, index, axis=0)
 
 if __name__ == '__main__':
     X = np.array([[1, 2, 3], [4, 5, 6]])
