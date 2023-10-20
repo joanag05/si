@@ -1,15 +1,20 @@
-
 import numpy as np
 
-def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float :
+
+def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
-    Calculates the accuracy of the model's predictions.
+    It returns the accuracy of the model on the given dataset
 
-    Args:
-        y_true (np.ndarray): The true labels.
-        y_pred (np.ndarray): The predicted labels.
+    Parameters
+    ----------
+    y_true: np.ndarray
+        The true labels of the dataset
+    y_pred: np.ndarray
+        The predicted labels of the dataset
 
-    Returns:
-        float: The accuracy of the model's predictions.
+    Returns
+    -------
+    accuracy: float
+        The accuracy of the model
     """
     return np.sum(y_true == y_pred) / len(y_true)

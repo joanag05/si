@@ -64,11 +64,14 @@ class SelectPercentile:
         -------
         Dataset
         """
+
         if self.F is None:
             raise ValueError("Model not fitted")
         
         total = len(list(dataset.features))
         k = int(self.percentile * total)
+        if k == 0 : k = 1
+        print(k)
         index = np.argsort(self.F)[-k:]
         features = np.array(dataset.features[index])
         return Dataset(X=dataset.X[:, index], y=dataset.y, features=list(features), label=dataset.label)
@@ -91,13 +94,13 @@ class SelectPercentile:
 
 if __name__ == '__main__':
     from si.data.dataset import Dataset
+    from si.io.csv_file import read_csv
 
-    df = pd.read_csv('C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\iris\iris.csv')
-    dataset = Dataset.from_dataframe(df, label='class')
+    df = read_csv(r'C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\iris\iris.csv', label=True, features=True)
 
-    selector = SelectPercentile(percentile=0.5)
-    selector = selector.fit(dataset)
-    dataset = selector.transform(dataset)
+    selector = SelectPercentile(percentile=1.1)
+    selector = selector.fit(df)
+    dataset = selector.transform(df)
     print(dataset.features)   
 
 
