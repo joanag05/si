@@ -3,7 +3,7 @@
 from typing import Callable, Union
 
 import numpy as np
-
+import csv
 from si.data.dataset import Dataset
 from si.metrics.rmse import rmse
 
@@ -102,11 +102,13 @@ if __name__ == '__main__':
     from si.model_selection.split import train_test_split
     import pandas as pd
     from si.io.csv_file import read_csv
-    from sklearn import preprocessing
+
+
 
     
-    df = read_csv("C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\cpu.csv")
-    print(df.head())
+    path = r'C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\cpu\cpu.csv'
+    df = pd.read_csv(path)
+
     dataset_ = Dataset.from_dataframe(df, label='perf')
 
     dataset_train, dataset_test = train_test_split(dataset_, test_size=0.25)
