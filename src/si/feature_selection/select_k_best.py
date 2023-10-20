@@ -1,7 +1,3 @@
-from typing_extensions import Self
-import numpy as np
-import pandas as pd
-
 from typing import Callable
 
 import numpy as np
@@ -16,13 +12,14 @@ class SelectKBest:
     Feature ranking is performed by computing the scores of each feature using a scoring function:
         - f_classification: ANOVA F-value between label/feature for classification tasks.
         - f_regression: F-value obtained from F-value of r's pearson correlation coefficients for regression tasks.
-    
+
     Parameters
     ----------
     score_func: callable
         Function taking dataset and returning a pair of arrays (scores, p_values)
     k: int, default=10
         Number of top features to select.
+
     Attributes
     ----------
     F: array, shape (n_features,)
@@ -30,70 +27,86 @@ class SelectKBest:
     p: array, shape (n_features,)
         p-values of F-scores.
     """
-
     def __init__(self, score_func: Callable = f_classification, k: int = 10):
         """
-        SelectKBest selects the k best features according to a scoring function.
+        Select features according to the k highest scores.
 
         Parameters
         ----------
-        score_func: Callable
-            The scoring function
-        k: int
-            The number of features to select
+        score_func: callable
+            Function taking dataset and returning a pair of arrays (scores, p_values)
+        k: int, default=10
+            Number of top features to select.
         """
-        self.score_func = score_func
         self.k = k
+        self.score_func = score_func
         self.F = None
         self.p = None
 
     def fit(self, dataset: Dataset) -> 'SelectKBest':
         """
-        Fits the SelectKBest model to the dataset
+        It fits SelectKBest to compute the F scores and p-values.
 
         Parameters
         ----------
         dataset: Dataset
-            The dataset to fit the model to
-        
+            A labeled dataset
+
         Returns
         -------
-        self : object
+        self: object
+            Returns self.
         """
         self.F, self.p = self.score_func(dataset)
         return self
-    
+
     def transform(self, dataset: Dataset) -> Dataset:
         """
-        Transforms the dataset by selecting the k best features
+        It transforms the dataset by selecting the k highest scoring features.
 
         Parameters
         ----------
         dataset: Dataset
-            The dataset to transform
-        
+            A labeled dataset
+
         Returns
         -------
-        Dataset
+        dataset: Dataset
+            A labeled dataset with the k highest scoring features.
         """
-        if self.F is None or self.p is None:
-            raise ValueError("Model not fitted")
-        
-        index = np.argsort(self.F)[::-1][:self.k]
-        features = np.array(dataset.features[index])
-        return Dataset(features, dataset.y, dataset.classes, dataset.features_names[index])
-    
+        idxs = np.argsort(self.F)[-self.k:]
+        features = np.array(dataset.features)[idxs]
+        return Dataset(X=dataset.X[:, idxs], y=dataset.y, features=list(features), label=dataset.label)
+
     def fit_transform(self, dataset: Dataset) -> Dataset:
         """
-        Fits the SelectKBest model to the dataset and transforms it
+        It fits SelectKBest and transforms the dataset by selecting the k highest scoring features.
 
         Parameters
         ----------
         dataset: Dataset
-            The dataset to fit the model to and transform
-        
+            A labeled dataset
+
         Returns
         -------
-        Dataset
+        dataset: Dataset
+            A labeled dataset with the k highest scoring features.
         """
-        return self.fit(dataset).transform(dataset)
+        self.fit(dataset)
+        return self.transform(dataset)
+
+
+if __name__ == '__main__':
+    from si.data.dataset import Dataset
+
+    dataset = Dataset(X=np.array([[0, 2, 0, 3],
+                                  [0, 1, 4, 3],
+                                  [0, 1, 1, 3]]),
+                      y=np.array([0, 1, 0]),
+                      features=["f1", "f2", "f3", "f4"],
+                      label="y")
+
+    selector = SelectKBest(k=2)
+    selector = selector.fit(dataset)
+    dataset = selector.transform(dataset)
+    print(dataset.features)

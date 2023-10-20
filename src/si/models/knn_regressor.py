@@ -101,10 +101,11 @@ if __name__ == '__main__':
     from si.data.dataset import Dataset
     from si.model_selection.split import train_test_split
     import pandas as pd
+    from si.io.csv_file import read_csv
     from sklearn import preprocessing
 
     
-    df = pd.read_csv("C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\cpu.csv")
+    df = read_csv("C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\cpu.csv")
     print(df.head())
     dataset_ = Dataset.from_dataframe(df, label='perf')
 
