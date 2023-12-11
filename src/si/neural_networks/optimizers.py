@@ -63,6 +63,15 @@ class SGD(Optimizer):
 
 #Exercise 15 
 class Adam(Optimizer):
+    """
+    Adam optimizer implementation.
+
+    Args:
+        learning_rate (float): The learning rate for the optimizer.
+        beta_1 (float, optional): The exponential decay rate for the first moment estimates. Defaults to 0.9.
+        beta_2 (float, optional): The exponential decay rate for the second moment estimates. Defaults to 0.999.
+        epsilon (float, optional): A small value to prevent division by zero. Defaults to 1e-8.
+    """
 
     def __init__(self, learning_rate: float, beta_1: float = 0.9, beta_2: float = 0.999, epsilon: float = 1e-8):
         self.learning_rate = learning_rate
@@ -74,6 +83,16 @@ class Adam(Optimizer):
         self.t = 0
 
     def update(self, w: np.ndarray, grad_loss_w: np.ndarray) -> np.ndarray:
+        """
+        Perform an update step using the Adam optimizer.
+
+        Args:
+            w (np.ndarray): The weights to be updated.
+            grad_loss_w (np.ndarray): The gradient of the loss function with respect to the weights.
+
+        Returns:
+            np.ndarray: The updated weights.
+        """
         if self.m is None:
             self.m = np.zeros_like(w)
             self.v = np.zeros_like(w)
