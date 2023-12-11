@@ -197,6 +197,8 @@ class Dataset:
         X = np.random.rand(n_samples, n_features)
         y = np.random.randint(0, n_classes, n_samples)
         return cls(X, y, features=features, label=label)
+    
+    # Exercise 2
 
     def dropna(self):
         """
@@ -214,19 +216,6 @@ class Dataset:
         self.X = self.X[~nan_rows]
         self.y = self.y[~nan_rows]
         
-        return self
-
-    def fillna(self, value):
-        """
-        Fill missing values in the dataset with a specified value.
-
-        Parameters:
-            value (float or int): The value to replace missing values with.
-
-        Returns:
-            self: The modified dataset object.
-        """
-        self.X = np.nan_to_num(self.X, nan=value)
         return self
     
 
@@ -257,7 +246,7 @@ class Dataset:
         self.y = np.delete(self.y, index, axis=0)
         return self
     
-    
+
 if __name__ == '__main__':
     X = np.array([[1, 2, 3], [4, 5, 6]])
     y = np.array([1, 2])

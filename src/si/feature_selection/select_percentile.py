@@ -2,14 +2,16 @@ from typing import Callable
 
 import numpy as np
 import pandas as pd
-
+import math
 
 import numpy as np
 
 from si.data.dataset import Dataset
 from si.statistics.f_classification import f_classification
 
+# Exercise 3
 
+# 3.1
 class SelectPercentile:
     """
     SelectPercentile selects the k best features according to a scoring function and a given percentile.
@@ -22,20 +24,20 @@ class SelectPercentile:
         The percentile of features to select
     """
 
-    def __init__(self, scorefunc: Callable = f_classification, percentile: float = 0.5):
-            """
-            Initializes a SelectPercentile instance with the given score function and percentile.
+    def __init__(self, scorefunc: Callable = f_classification, percentile: float = 0.5) -> None:
+        """
+        Initializes a SelectPercentile instance with the given score function and percentile.
 
-            Args:
-                scorefunc (Callable): The score function to use for feature selection. Defaults to f_classification.
-                percentile (float): The percentile of features to select. Defaults to 0.5.
-            """
-            self.scorefunc = scorefunc
-            self.percentile = percentile
-            self.F = None
-            self.p = None
+        Args:
+            scorefunc (Callable): The score function to use for feature selection. Defaults to f_classification.
+            percentile (float): The percentile of features to select. Defaults to 0.5.
+        """
+        self.scorefunc = scorefunc
+        self.percentile = percentile
+        self.F = None
+        self.p = None
 
-    def fit (self, dataset: Dataset) -> 'SelectPercentile':
+    def fit(self, dataset: Dataset) -> 'SelectPercentile':
         """
         Fits the SelectPercentile model to the dataset
 
@@ -64,17 +66,15 @@ class SelectPercentile:
         -------
         Dataset
         """
-
-        if self.F is None:
-            raise ValueError("Model not fitted")
-        
-        total = len(list(dataset.features))
-        k = int(self.percentile * total)
-        if k == 0 : k = 1
-        print(k)
-        index = np.argsort(self.F)[-k:]
-        features = np.array(dataset.features[index])
-        return Dataset(X=dataset.X[:, index], y=dataset.y, features=list(features), label=dataset.label)
+        n_feat = int(len(dataset.features) * self.percentile)
+        idxs = np.argsort(self.F)[-n_feat:]
+        percentile = dataset.X[:, idxs]
+        percentile_name = [dataset.features[idx] for idx in idxs]
+    
+    
+        return Dataset(percentile, dataset.y, percentile_name, dataset.label)
+    
+    
     
     def fit_transform(self, dataset: Dataset) -> Dataset:
         """
@@ -92,18 +92,21 @@ class SelectPercentile:
         self.fit(dataset)
         return self.transform(dataset)
 
+# Exercise 3 : Testing
+
 if __name__ == '__main__':
-    from si.data.dataset import Dataset
-    from si.io.csv_file import read_csv
+    dataset = Dataset(X=np.array([[0, 2, 4, 1, 5],
+                                  [0, 1, 4, 0, 5 ],
+                                  [0, 1, 4, 1, 5]]),
+                      y=np.array([0, 1, 0]),
+                      features=["f1", "f2", "f3", "f4", 'f5'],
+                      label="y")
 
-    df = read_csv(r'C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\iris\iris.csv', label=True, features=True)
+    selector = SelectPercentile()
+    selector = selector.fit(dataset)
+    dataset = selector.transform(dataset)
+    print(dataset.features)
 
-    selector = SelectPercentile(percentile=1.1)
-    selector = selector.fit(df)
-    dataset = selector.transform(df)
-    print(dataset.features)   
-
-
-
+# ['f3', 'f5']
          
 
