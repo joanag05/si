@@ -199,22 +199,65 @@ class Dataset:
         return cls(X, y, features=features, label=label)
 
     def dropna(self):
+        """
+        Remove rows with NaN values from the dataset.
 
-        no_nan = np.logical_not(np.any(np.isnan(self.X), axis=1))
+        This method removes rows from the dataset where any of the features (X) have NaN values.
+        It updates the X and y attributes of the dataset accordingly.
 
-        self.X = self.X[no_nan, :]
-        self.y = self.y[no_nan]
-
+        Returns:
+            None
+        """
+        
+        nan_rows = np.isnan(self.X).any(axis=1)
+        
+        self.X = self.X[~nan_rows]
+        self.y = self.y[~nan_rows]
+        
+        return self
 
     def fillna(self, value):
+        """
+        Fill missing values in the dataset with a specified value.
 
-        self.X = np.nan_to_num(self.X, nan = value)
+        Parameters:
+            value (float or int): The value to replace missing values with.
 
+        Returns:
+            self: The modified dataset object.
+        """
+        self.X = np.nan_to_num(self.X, nan=value)
+        return self
+    
+
+    def fillna(self, value):
+        """
+        Fills missing values in the dataset with the specified value.
+
+        Parameters:
+            value (float or int): The value to fill the missing values with.
+
+        Returns:
+            self: The modified dataset object.
+        """
+        self.X = np.nan_to_num(self.X, nan=value)
+        return self
+    
     def remove_by_index(self, index):
+        """
+        Remove a data point from the dataset by its index.
 
+        Parameters:
+            index (int): The index of the data point to be removed.
+
+        Returns:
+            self: The updated dataset object.
+        """
         self.X = np.delete(self.X, index, axis=0)
         self.y = np.delete(self.y, index, axis=0)
-
+        return self
+    
+    
 if __name__ == '__main__':
     X = np.array([[1, 2, 3], [4, 5, 6]])
     y = np.array([1, 2])
