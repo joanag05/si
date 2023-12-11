@@ -6,6 +6,8 @@ from si.metrics.mse import mse
 import numpy as np
 from si.data import Dataset
 
+# Exercise 8
+
 class RidgeRegressionLeastSquares:
     """
     Ridge Regression Least Squares model implementation.
@@ -76,26 +78,24 @@ class RidgeRegressionLeastSquares:
         else:
             X = dataset.X
 
-        m, n = dataset.shape()
-        
-        # Add intercept term to X
-        X = np.c_[np.ones(m), X]
-        
-        # Compute the (penalty term l2_penalty * identity matrix)
-        penalty_matrix = self.l2_penalty * np.eye(n + 1)
-        
-        # Change the first position of the penalty matrix to 0
-        penalty_matrix[0, 0] = 0
-        
-        # Compute the model parameters
-        A = X.T.dot(X) + penalty_matrix
-        b = X.T.dot(dataset.y)
-        thetas = np.linalg.inv(A).dot(b)
-        
+        X=np.c_[np.ones(X.shape[0]),X]
+
+        penalty_m = self.l2_penalty * np.eye(X.shape[1])
+        penalty_m [0,0] = 0
+
+        transposed_x = np.transpose(X)
+
+        XtX = np.linalg.inv(np.dot(transposed_x,X) + penalty_m) 
+        Xty = np.dot(transposed_x,dataset.y)
+
+        thetas = np.dot(XtX,Xty)
         self.theta_zero = thetas[0]
         self.theta = thetas[1:]
 
+        self.predictions = np.dot(X, thetas)
+
         return self
+
 
     def predict(self, dataset: Dataset) -> np.array:
         """
@@ -116,11 +116,13 @@ class RidgeRegressionLeastSquares:
         else:
             X = dataset.X
 
-        m = dataset.shape()[0]
-        X = np.c_[np.ones(m), X]
-        y_pred = X.dot(np.r_[self.theta_zero, self.theta])
+        
+        X = np.c_[np.ones(X.shape[0]), X]
+
+        y_pred = np.dot(X, np.r_[self.theta, self.theta_zero])
 
         return y_pred
+
 
     def score(self, dataset: Dataset) -> float:
         """
@@ -137,9 +139,8 @@ class RidgeRegressionLeastSquares:
             R^2 score.
         """
         y_pred = self.predict(dataset)
-        ss_res = np.sum((dataset.y - y_pred) ** 2)
-        ss_tot = np.sum((dataset.y - np.mean(dataset.y)) ** 2)
-        score = 1 - ss_res / ss_tot
+        
+        score = mse(dataset.y, y_pred)
 
         return score
 
