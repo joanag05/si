@@ -1,16 +1,17 @@
 import numpy as np
 
+# Exercise 4
 
 def manhattan_distance (x:np.array, y:np.array):
     """
-    Computes the manhattan distance between two arrays
+    Computes the Manhattan distance between a single sample and multiple samples.
 
     Parameters
     ----------
     x: np.array
-        The first array
+        A single sample
     y: np.array
-        The second array
+        Multiple samples.
 
     Returns
     -------

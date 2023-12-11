@@ -5,6 +5,7 @@ from si.data.dataset import Dataset
 from si.statistics.euclidean_distance import euclidean_distance
 from numpy.linalg import svd
 
+# Exercise 6
 class PCA:
     """
     Principal Component Analysis (PCA) implementation.
@@ -94,21 +95,40 @@ class PCA:
         Dataset
         """
         return self.fit(dataset).transform(dataset)
-    
+
+# Testing PCA
+   
 if __name__ == '__main__':
+    
+    from sklearn import datasets
     from si.data.dataset import Dataset
-    import pandas as pd
-    from sklearn import preprocessing
-    df = pd.read_csv("C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\iris\iris.csv")
-    print(df.head())
-    dataset_ = Dataset.from_dataframe(df, label='class')
-    dataset_.X = preprocessing.scale(dataset_.X)
+    from sklearn.decomposition import PCA as SKLearnPCA
+    
 
-    n = 2
-    pca = PCA(n)
-    res = pca.fit_transform(dataset_)
-    print(res.shape)
+    iris = datasets.load_iris()
+    X = iris.data
+    y = iris.target
+    label = 'target'
+    features = iris.feature_names
+    
+    
+    dataset = Dataset(X, y, features, label)
 
-    print(pca.explained_variance)
+    
+    sklearn_pca = SKLearnPCA(n_components=2)
+    sklearn_transformed_data = sklearn_pca.fit_transform(dataset.X)
+
+    
+    your_pca = PCA(n_components=2)
+    your_transformed_dataset = your_pca.fit_transform(dataset)
+
+    print("Scikit-learn Transformed Data:")
+    print(sklearn_transformed_data)
+    print("Your PCA Transformed Data:")
+    print(your_transformed_dataset.X)
+
+
+
+
     
 
