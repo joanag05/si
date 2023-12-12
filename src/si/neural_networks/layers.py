@@ -197,6 +197,7 @@ class DenseLayer(Layer):
     
     
 #Exercise 12   
+
 class DropoutLayer(Layer):
     """Dropout layer of a neural network
 

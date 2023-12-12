@@ -204,29 +204,34 @@ class SoftmaxActivation(ActivationLayer):
     def activation_function(self, input: np.ndarray):
         """
         Softmax activation function.
+
         Parameters
         ----------
         input: numpy.ndarray
             The input to the layer.
+
         Returns
         -------
         numpy.ndarray
             The output of the layer.
         """
-        exp_values = np.exp(input - np.max(input, axis=1, keepdims=True))
-        probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
-        return probabilities
+        max_value = input - np.max(input, axis=0, keepdims=True)
+        exp_input = np.exp(max_value)
+        softmax = exp_input / np.sum(exp_input, axis=0, keepdims=True)  #softmax formula
+        return softmax
 
     def derivative(self, input: np.ndarray):
         """
         Derivative of the softmax activation function.
+
         Parameters
         ----------
         input: numpy.ndarray
             The input to the layer.
+
         Returns
         -------
         numpy.ndarray
             The derivative of the activation function (Softmax derivative is used during backpropagation).
         """
-        return None  #not used in backpropagation
+        return self.activation_function(input)*(1-self.activation_function(input))
