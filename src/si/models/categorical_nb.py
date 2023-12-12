@@ -1,27 +1,21 @@
-
 import numpy as np
-
 from si.data.dataset import Dataset
+from si.metrics.accuracy import accuracy
+
 class CategoricalNB:
-    """
-    A Naive Bayes classifier for categorical data.
+    def __init__(self, smoothing=1.0):
+        """
+        Custom implementation of Categorical Naive Bayes for discrete/categorical data.
 
-    Parameters:
-    -----------
-    smoothing : float, default=1.0
-        The smoothing parameter to apply to the probabilities.
-
-    Attributes:
-    -----------
-    class_prior : array-like of shape (n_classes,)
-        The prior probabilities of the classes.
-    feature_probs : array-like of shape (n_classes, n_features)
-        The conditional probabilities of each feature given each class.
-    """
-    def __init__(self, smoothing: float = 1.0):
+        Parameters:
+        -----------
+        smoothing : float, default=1.0
+            Laplace smoothing to avoid zero probabilities.
+        """
         self.smoothing = smoothing
         self.class_prior = None
         self.feature_probs = None
+        self.num_classes = 0
 
     def fit(self, dataset):
         """
@@ -40,30 +34,26 @@ class CategoricalNB:
         feature_counts = np.zeros((n_classes, n_features))
         class_prior = np.zeros(n_classes)
 
-        # Calculate class counts
         for i in range(n_classes):
             class_counts[i] = np.sum(y == i)
 
-        # Calculate feature counts
         for i in range(n_classes):
             for j in range(n_features):
                 feature_counts[i, j] = np.sum(X[y == i, j])
 
-        # Calculate class prior probabilities
         class_prior = class_counts / n_samples
 
-        # Apply Laplace smoothing to feature_counts and class_counts
         feature_counts += self.smoothing
         class_counts += self.smoothing * n_features
 
-        # Calculate feature probabilities
         feature_probs = feature_counts / class_counts[:, np.newaxis]
 
         self.class_prior = class_prior
         self.feature_probs = feature_probs
+        self.num_classes = n_classes
 
         return self
-    
+
     def predict(self, dataset):
         """
         Predict the class labels for a given set of samples.
@@ -80,7 +70,7 @@ class CategoricalNB:
         """
         X = dataset.X
         n_samples, n_features = X.shape
-        n_classes, _ = self.feature_probs.shape
+        n_classes = self.num_classes
 
         predictions = np.zeros(n_samples, dtype=int)
 
@@ -109,34 +99,25 @@ class CategoricalNB:
         error : float
             The error between the actual values and predictions (1.0 - accuracy).
         """
-        y_true = dataset.y
         y_pred = self.predict(dataset)
-
-        accuracy = np.mean(y_true == y_pred)
-        error = 1.0 - accuracy
-
-        return error
-
-import numpy as np
+        return accuracy(dataset.y, y_pred)
+    
+    
 
 
+if __name__ == "__main__":
 
-X = np.array([[0, 1, 0], [1, 0, 1], [1, 1, 0], [0, 1, 1]])
-y = np.array([0, 1, 0, 1])
+    
+    X = np.array([[0, 1, 0], [1, 0, 1], [1, 1, 0], [0, 1, 1]])
+    y = np.array([0, 1, 0, 1])
+  
+    dataset = Dataset(X, y)
 
-from si.data.dataset import Dataset  
-dataset = Dataset(X, y)
+    model = CategoricalNB(smoothing=1)
+    model.fit(dataset)
 
+    predictions = model.predict(dataset)
+    error = model.score(dataset)
 
-model = CategoricalNB(smoothing=1)
-
-model.fit(dataset)
-
-
-predictions = model.predict(dataset)
-
-error = model.score(dataset)
-
-
-print("Predicted classes:", predictions)
-print("Classification error:", error)
+    print("Predicted classes:", predictions)
+    print("Classification error:", model.score(dataset))

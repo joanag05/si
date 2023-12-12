@@ -231,17 +231,26 @@ class DropoutLayer(Layer):
         Returns:
             np.ndarray: The output of the dropout layer.
         """
-
+        # if we are in training mode, apply dropout
 
         if training:
-            self.input = input
-            self.mask = np.random.binomial(1, self.probability, size=input.shape) / self.probability
-            self.output = self.input * self.mask
+            
+            #compute the scaling factor
+            scale_factor = 1 / (1 - self.probability)
+
+            #generate the binary mask
+            self.mask = np.random.binomial(1, 1 - self.probability, size=input.shape)
+
+            self.output = input * self.mask * scale_factor
+
+            return self.output
+        
+        # if we are in inference mode, return the input
 
         else:
             self.output = input
 
-        return self.output
+            return self.output
 
     
     def backward_propagation(self, output_error: np.ndarray) -> float:
@@ -254,7 +263,10 @@ class DropoutLayer(Layer):
         Returns:
             float: The updated error of the layer's input.
         """
-        return output_error * self.mask
+        # compute the input error
+        input_error = output_error * self.mask
+
+        return input_error
     
 
     def output_shape(self) -> tuple:
@@ -264,11 +276,34 @@ class DropoutLayer(Layer):
         Returns:
             tuple: The shape of the output of the layer.
         """
-
+        # the output shape is the same as the input shape
         return self.input_shape()
     
     def parameters(self) -> int:
-        return 0
+            """
+            Returns the number of parameters in the layer.
+
+            Returns:
+                int: The number of parameters in the layer.
+            """
+
+            # the dropout layer has no parameters
+            return 0
+    
+if __name__ == "__main__":
+    import numpy as np
+    import si
+    #test the dropout layer
+    np.random.seed(1)
+    x = np.random.randint(10, size=(1, 10))
+    print("x:", x)
+    # create the dropout layer
+    dropout_layer = DropoutLayer(0.5)
+    # test the dropout layer
+    print("output training:", dropout_layer.forward_propagation(x, training=True))
+    # print the mask
+    print("mask:", dropout_layer.mask)
+    print("output inference:", dropout_layer.forward_propagation(x, training=False))
     
 
 

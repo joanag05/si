@@ -74,6 +74,7 @@ class Adam(Optimizer):
     """
 
     def __init__(self, learning_rate: float, beta_1: float = 0.9, beta_2: float = 0.999, epsilon: float = 1e-8):
+
         self.learning_rate = learning_rate
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -93,9 +94,14 @@ class Adam(Optimizer):
         Returns:
             np.ndarray: The updated weights.
         """
+        # Initialize m and v if they are None
+
         if self.m is None:
-            self.m = np.zeros_like(w)
-            self.v = np.zeros_like(w)
+            self.m = np.zeros(np.shape(w))
+        if self.v is None:
+            self.v = np.zeros(np.shape(w))
+
+        # Update m, v and t
 
         self.t += 1
         self.m = self.beta_1 * self.m + (1 - self.beta_1) * grad_loss_w
@@ -106,5 +112,16 @@ class Adam(Optimizer):
 
         return w - self.learning_rate * m_hat / (np.sqrt(v_hat) + self.epsilon)
     
-        
+#test Adam class
+
+if __name__ == '__main__':
+    import numpy as np
+    #test the optimizer
+    adam = Adam(learning_rate=0.001)
+    w = np.array([1, 2, 3])
+    grad_loss_w = np.array([1, 2, 3])
+    print(adam.update(w, grad_loss_w))
+
+
+
     

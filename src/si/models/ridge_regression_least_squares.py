@@ -4,7 +4,7 @@ from si.data.dataset import Dataset
 from si.metrics.mse import mse
 
 import numpy as np
-from si.data import Dataset
+from si.data.dataset import Dataset
 
 # Exercise 8
 
@@ -48,9 +48,9 @@ class RidgeRegressionLeastSquares:
         Compute the R^2 score for the input data.
     """
 
-    def __init__(self, l2_penalty=1.0, alpha: float = 0.001, scale=True):
+    def __init__(self, l2_penalty: float = 1, scale: bool = True):
+
         self.l2_penalty = l2_penalty
-        self.alpha = alpha
         self.scale = scale
         self.theta = None
         self.theta_zero = None
@@ -78,21 +78,22 @@ class RidgeRegressionLeastSquares:
         else:
             X = dataset.X
 
-        X=np.c_[np.ones(X.shape[0]),X]
+        # add the intercept term
 
-        penalty_m = self.l2_penalty * np.eye(X.shape[1])
-        penalty_m [0,0] = 0
+        X = np.c_[np.ones(X.shape[0]), X]
 
-        transposed_x = np.transpose(X)
+        # compute the model parameters (l2_penalty * identity matrix)
+        penalty_m = np.eye(X.shape[1]) * self.l2_penalty
 
-        XtX = np.linalg.inv(np.dot(transposed_x,X) + penalty_m) 
-        Xty = np.dot(transposed_x,dataset.y)
+        # set the intercept term to 0
 
-        thetas = np.dot(XtX,Xty)
-        self.theta_zero = thetas[0]
-        self.theta = thetas[1:]
+        penalty_m[0, 0] = 0
 
-        self.predictions = np.dot(X, thetas)
+        # compute the model parameters theta and theta_zero
+
+        theta_vector = np.linalg.inv(X.T.dot(X) + penalty_m).dot(X.T).dot(dataset.y)
+        self.theta_zero = theta_vector[0]
+        self.theta = theta_vector[1:]
 
         return self
 
@@ -111,15 +112,19 @@ class RidgeRegressionLeastSquares:
         y_pred : np.array
             Predicted output.
         """
+        # scale the input features if needed
         if self.scale:
             X = (dataset.X - self.mean) / self.std
         else:
             X = dataset.X
 
+        # add the intercept term (add colums of 1s to the left of X)
         
         X = np.c_[np.ones(X.shape[0]), X]
+        
+        # compute the predictions
 
-        y_pred = np.dot(X, np.r_[self.theta, self.theta_zero])
+        y_pred = X.dot(np.r_[self.theta_zero, self.theta])
 
         return y_pred
 
@@ -138,13 +143,12 @@ class RidgeRegressionLeastSquares:
         score : float
             R^2 score.
         """
-        y_pred = self.predict(dataset)
         
-        score = mse(dataset.y, y_pred)
 
-        return score
+        return mse(dataset.y, self.predict(dataset))
 
 # This is how you can test it against sklearn to check if everything is fine
+
 if __name__ == '__main__':
     # make a linear dataset
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
@@ -152,7 +156,7 @@ if __name__ == '__main__':
     dataset_ = Dataset(X=X, y=y)
 
     # fit the model
-    model = RidgeRegressionLeastSquares(alpha=2.0)
+    model = RidgeRegressionLeastSquares()
     model.fit(dataset_)
     print(model.theta)
     print(model.theta_zero)
@@ -162,7 +166,7 @@ if __name__ == '__main__':
 
     # compare with sklearn
     from sklearn.linear_model import Ridge
-    model = Ridge(alpha=2.0)
+    model = Ridge()
     # scale data
     X = (dataset_.X - np.nanmean(dataset_.X, axis=0)) / np.nanstd(dataset_.X, axis=0)
     model.fit(X, dataset_.y)

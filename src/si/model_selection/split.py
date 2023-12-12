@@ -62,34 +62,38 @@ def stratified_train_test_split(dataset: Dataset, test_size: float = 0.20, rando
     -------
     Tuple[Dataset, Dataset]
         A tuple containing the stratified train and test Dataset objects.
+
     """
-    unique_labels, label_counts = np.unique(dataset.y, return_counts=True)
+    # set random state
+
+    np.random.seed(random_state)
+
+    # get unique labels and their counts
+
+    unique_labels, counts = np.unique(dataset.y, return_counts=True)  #finds the unique elements in an array and the indexes of those
+    
+    # initialize train and test indexes
 
     train_idx = []
     test_idx = []
 
-    if random_state is not None:
-        random.seed(random_state)
+    # lopp over the unique labels and their counts
 
     for label in unique_labels:
-        num_test_samples = int(label_counts[label] * test_size)
+        # get the number of samples in the test set
+        n_test = int(counts[np.where(unique_labels == label)] * test_size)
 
-        class_indices = np.where(dataset.y == label)[0]
-        random.shuffle(class_indices)
+        # get the permutations of the samples with the current label
+        permutations = np.random.permutation(np.where(dataset.y == label)[0])
 
-        
-        test_idx.extend(class_indices[:num_test_samples])
+        # get the samples in the test set
+        test_idx.extend(permutations[:n_test])
 
-       
-        train_idx.extend(class_indices[num_test_samples:])
+        # get the samples in the training set
+        train_idx.extend(permutations[n_test:])
 
-    train_data = dataset.X[train_idx]
-    train_labels = dataset.y[train_idx]
-    train_dataset = Dataset(train_data, train_labels, dataset.features, dataset.label)
-
-    test_data = dataset.X[test_idx]
-    test_labels = dataset.y[test_idx]
-    test_dataset = Dataset(test_data, test_labels, dataset.features, dataset.label)
+    train_dataset = Dataset(dataset.X[train_idx],dataset.y[train_idx],features=dataset.features, label=dataset.label) #changes in X and y, adapted to train and test
+    test_dataset = Dataset(dataset.X[test_idx],dataset.y[test_idx],features=dataset.features, label=dataset.label)
 
     return train_dataset, test_dataset
 
@@ -100,23 +104,20 @@ if __name__ == '__main__':
 
 
     from sklearn import datasets
+    from si.io.csv_file import read_csv
 
-    iris = datasets.load_iris()
-    X = iris.data # Features
-    y = iris.target # Labels
-
-    dataset = Dataset(X, y, label="iris", features=["sepal_length", "sepal_width", "petal_length", "petal_width"])
+    filename = "\\Users\\joana\\OneDrive\\Documentos\\GitHub\\si\\datasets\\iris\\iris.csv"
+    iris_data = read_csv(filename= filename, sep = ',', features = True, label = True)
     
-    
-    train_set, test_set = train_test_split(dataset, test_size=0.2, random_state=42)
+    train_set, test_set = train_test_split(iris_data, test_size=0.2, random_state=42)
 
-    print("Train set size:", len(train_set))
-    print("Test set size:", len(test_set))
+    print("Train set size:", train_set.shape())
+    print("Test set size:", test_set.shape())
 
 
     
-    train_set, test_set = stratified_train_test_split(dataset, test_size=0.2, random_state=42)
+    train_dataset, test_dataset = stratified_train_test_split(iris_data, test_size=0.2, random_state=42)
 
-    print("Train set size:", len(train_set))
-    print("Test set size:", len(test_set))
+    print("Train set size:", train_dataset.shape())
+    print("Test set size:", test_dataset.shape())
 

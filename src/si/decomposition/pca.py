@@ -77,7 +77,7 @@ class PCA:
             raise ValueError("Model not fitted")
         
         X = dataset.X - self.mean
-        X = np.dotnp.dot(X, np.transpose(self.components))
+        X = np.dot(X, np.transpose(self.components))
         return X
     
 
@@ -94,39 +94,33 @@ class PCA:
         -------
         Dataset
         """
-        return self.fit(dataset).transform(dataset)
+        self.fit(dataset)
+        return self.transform(dataset)
 
 # Testing PCA
    
 if __name__ == '__main__':
     
-    from sklearn import datasets
     from si.data.dataset import Dataset
-    from sklearn.decomposition import PCA as SKLearnPCA
-    
 
-    iris = datasets.load_iris()
-    X = iris.data
-    y = iris.target
-    label = 'target'
-    features = iris.feature_names
-    
-    
-    dataset = Dataset(X, y, features, label)
-
-    
-    sklearn_pca = SKLearnPCA(n_components=2)
-    sklearn_transformed_data = sklearn_pca.fit_transform(dataset.X)
-
-    
-    your_pca = PCA(n_components=2)
-    your_transformed_dataset = your_pca.fit_transform(dataset)
-
-    print("Scikit-learn Transformed Data:")
-    print(sklearn_transformed_data)
-    print("Your PCA Transformed Data:")
-    print(your_transformed_dataset.X)
-
+    dataset = Dataset(X=np.array([[0, 2, 0, 3],
+                                    [0, 1, 4, 3],
+                                    [0, 1, 1, 3]]),
+                        y=np.array([0, 1, 0]),
+                        features=["f1", "f2", "f3", "f4"],
+                        label="y")
+        
+    pca = PCA(n_components=3)
+    pca.fit_transform(dataset)
+    print("Variance", pca.explained_variance)
+    print()
+    print("Componentes", pca.components)
+    print()
+    print("Media", pca.mean)
+    print()
+    print(dataset.X)
+    print()
+    print("Fit_tranform", pca.fit_transform(dataset))
 
 
 

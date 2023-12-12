@@ -60,7 +60,7 @@ class KNNRegressor:
         """
         distances = self.distance(sample, self._train_dataset.X)
         k_nearest_neighbors = np.argsort(distances)[:self.k]
-        k_nearest_neighbors_labels = self.dataset.y[k_nearest_neighbors]
+        k_nearest_neighbors_labels = self._train_dataset.y[k_nearest_neighbors]
 
         return np.mean(k_nearest_neighbors_labels)
 
@@ -74,7 +74,7 @@ class KNNRegressor:
         Returns:
             np.ndarray: The predicted labels.
         """
-        return np.apply_along_axis(self._get_closest_label, axis=1, arr=dataset.X)
+        return np.apply_along_axis(self._get_closest_label, 1, dataset.X)
 
     def score(self, dataset: Dataset) -> float:
         """
@@ -88,31 +88,26 @@ class KNNRegressor:
         """
         predictions = self.predict(dataset)
         return rmse(dataset.y, predictions)
+ 
+if __name__ == "__main__":
     
-if __name__ == '__main__':
+    from si.model_selection.split import train_test_split
+    from si.models.knn_regressor import KNNRegressor
+    from si.io.csv_file import read_csv
 
-    import pandas as pd
-    from sklearn.model_selection import train_test_split
-    from si.data.dataset import Dataset
-    from si.models.knn_regressor import KNNRegressor  # Replace with your actual module
+    cpu = read_csv("\\Users\\joana\\OneDrive\\Documentos\\GitHub\\si\\datasets\\cpu\\cpu.csv", sep = ",", features=True, label=True)
 
+    train, test = train_test_split(cpu, test_size=0.2)
 
-    cpu_data = pd.read_csv('C:\Users\joana\OneDrive\Documentos\GitHub\si\datasets\cpu\cpu.csv')  
-    X = cpu_data[:, :-1]  # Todas as colunas exceto a última são features
-    y = cpu_data[:, -1]   # Última coluna é o target
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # initialize the KNN_Classifier
 
+    knn = KNNRegressor(k=3)
 
-    train_dataset = Dataset(X_train.values, y_train.values)
-    test_dataset = Dataset(X_test.values, y_test.values)
+    # fit the model
 
-    knn_regressor = KNNRegressor(k=5)  
+    knn.fit(train)
 
-    knn_regressor.fit(train_dataset)
+    # evaluate the model on test data
 
-
-    score = knn_regressor.score(test_dataset)
-    print(f'The RMSE of the model is: {score}')
-
-
-   
+    score = knn.score(test)
+    print("Score RMSE:", score)
