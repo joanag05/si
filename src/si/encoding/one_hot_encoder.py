@@ -1,6 +1,5 @@
 import numpy as np
 
-# do a onehotencoder class
 
 class OneHotEncoder:
     """
@@ -134,7 +133,7 @@ if __name__ == '__main__':
 
     print("Alphabet:\n", encoder.alphabet)
     print()
-    print(" Encoder Encoded:\n", encoded)
+    print("Encoder Encoded:\n", encoded)
     print()
     print("Encoder Decoded:\n", decoded)
 

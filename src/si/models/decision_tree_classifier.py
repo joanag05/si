@@ -1,5 +1,4 @@
-from typing import Literal, Tuple, Union
-
+from typing import  Tuple, Union, Literal
 import numpy as np
 
 from si.data.dataset import Dataset
@@ -274,7 +273,7 @@ if __name__ == '__main__':
     from si.io.csv_file import read_csv
     from si.model_selection.split import train_test_split
 
-    data = read_csv('../../../datasets/iris/iris.csv', sep=',', features=True, label=True)
+    data = read_csv("\\Users\\joana\\OneDrive\\Documentos\\GitHub\\si\\datasets\\iris\\iris.csv", sep=',', features=True, label=True)
     train, test = train_test_split(data, test_size=0.33, random_state=42)
     model = DecisionTreeClassifier(min_sample_split=3, max_depth=3, mode='gini')
     model.fit(train)

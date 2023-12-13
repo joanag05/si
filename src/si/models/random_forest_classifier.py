@@ -1,50 +1,56 @@
-from typing import List, Tuple
 import numpy as np
-from si.data.dataset import Dataset
+from typing import List, Tuple
 from si.models.decision_tree_classifier import DecisionTreeClassifier
+from si.data.dataset import Dataset
+from si.metrics.accuracy import accuracy
 
 class RandomForestClassifier:
     """
-    Random Forest Classifier implementation.
+    Random Forest Classifier.
 
     Parameters:
     - n_estimators: int, optional (default=100)
         The number of trees in the forest.
     - max_features: int, optional (default=None)
         The number of features to consider when looking for the best split.
+        If None, then max_features=sqrt(n_features).
     - min_sample_split: int, optional (default=2)
         The minimum number of samples required to split an internal node.
     - max_depth: int, optional (default=10)
         The maximum depth of the tree.
     - mode: str, optional (default='gini')
-        The criterion used to evaluate the quality of a split.
+        The function to measure the quality of a split.
+        Supported criteria are 'gini' for the Gini impurity and 'entropy' for the information gain.
     - seed: int, optional (default=42)
-        The random seed for reproducibility.
+        The random seed for reproducible results.
 
     Attributes:
-    - n_estimators: int
-        The number of trees in the forest.
-    - max_features: int
-        The number of features to consider when looking for the best split.
-    - min_sample_split: int
-        The minimum number of samples required to split an internal node.
-    - max_depth: int
-        The maximum depth of the tree.
-    - mode: str
-        The criterion used to evaluate the quality of a split.
-    - seed: int
-        The random seed for reproducibility.
     - trees: list
-        The list of decision trees in the random forest.
+        List of tuples containing the selected features and the corresponding decision tree.
+
+    Methods:
+    - fit(dataset: Dataset) -> RandomForestClassifier:
+        Fit the random forest classifier to the given dataset.
+        Returns the fitted RandomForestClassifier object.
+    - predict(dataset: Dataset) -> np.ndarray:
+        Predict the class labels for the given dataset.
+        Returns an array of predicted class labels.
+    - score(dataset: Dataset) -> float:
+        Calculate the accuracy score of the classifier on the given dataset.
+        Returns the accuracy score.
+
     """
 
-    def __init__(self, n_estimators: int, max_features: int = None, min_sample_split: int = 2, max_depth: int = 10, mode: str = 'gini', seed: int = 42):
+    def __init__(self, n_estimators: int, max_features: int = None, min_sample_split: int = 2, max_depth: int = 10, mode: str = 'gini', seed: int = 42) -> None:
+        #parameters
         self.n_estimators = n_estimators
         self.max_features = max_features
         self.min_sample_split = min_sample_split
         self.max_depth = max_depth
         self.mode = mode
         self.seed = seed
+
+        #estimated parameters
         self.trees = []
 
     def fit(self, dataset: Dataset) -> 'RandomForestClassifier':
@@ -57,59 +63,60 @@ class RandomForestClassifier:
 
         Returns:
         - RandomForestClassifier
-            The fitted random forest classifier.
+            The fitted RandomForestClassifier object.
         """
-        
 
-        if self.seed is not None: # if seed is not None, set the random seed
-            np.random.seed(self.seed) # set the random seed for reproducibility
+        # set random seed
+        if self.seed is not None:
+            np.random.seed(self.seed)   
 
-
+        # get number of samples and features
         n_samples, n_features = dataset.shape()
 
-        self.max_features = int(np.sqrt(n_features)) if self.max_features is None else self.max_features
+        # set max_features if not set
+        if self.max_features is None:
+            self.max_features = int(np.sqrt(n_features))
 
-        # train each tree in the forest
 
-        for _ in range(self.n_estimators):
-            bootstrap_indices = np.random.choice(n_samples, size=n_samples, replace=True)
-            feature_indices = np.random.choice(n_features, size=self.max_features, replace=False)
-            tree_dataset = Dataset(dataset.X[bootstrap_indices, :][:, feature_indices], dataset.y[bootstrap_indices])
-            
-            tree = DecisionTreeClassifier(min_sample_split=self.min_sample_split, max_depth=self.max_depth,
-                                          mode=self.mode)
-            tree.fit(tree_dataset)
-            
-            self.trees.append((feature_indices, tree))
-
+        for i in range(self.n_estimators):
+            # bootstrap dataset
+            bootstrap_indices = np.random.choice(n_samples, n_samples, replace=True)
+            features = np.random.choice(n_features, self.max_features, replace=False)
+            bootstrap_dataset = Dataset(dataset.X[bootstrap_indices, :][:, features], dataset.y[bootstrap_indices])
+            # create tree
+            tree = DecisionTreeClassifier(max_depth=self.max_depth, min_sample_split=self.min_sample_split, mode=self.mode)
+            # fit tree
+            tree.fit(bootstrap_dataset)
+            # save features and tree as tuple
+            self.trees.append((features, tree))
         return self
-
+    
+    
     def predict(self, dataset: Dataset) -> np.ndarray:
         """
         Predict the class labels for the given dataset.
 
         Parameters:
         - dataset: Dataset
-            The dataset to make predictions on.
+            The dataset to predict on.
 
         Returns:
         - np.ndarray
-            The predicted class labels.
+            An array of predicted class labels.
         """
-        predictions = []
+        y_pred = [None] * self.n_estimators
+        for i, (features_idx, tree) in enumerate(self.trees):
+            y_pred[i] = tree.predict(Dataset(dataset.X[:, features_idx], dataset.y))
         
-        for features, tree in self.trees:
-            tree_dataset = Dataset(dataset.X[:, features], dataset.features, label=dataset.label)
-            tree_pred = tree.predict(tree_dataset)
-            predictions.append(tree_pred)
+        most_frequent = []
+        for z in zip(*y_pred):
+            most_frequent.append(max(set(z), key=z.count))
 
-        predictions = np.array(predictions).T
-        final_predictions = np.array([np.argmax(np.bincount(pred)) for pred in predictions])
-        return final_predictions
+        return np.array(most_frequent)
 
     def score(self, dataset: Dataset) -> float:
         """
-        Calculate the accuracy score of the random forest classifier on the given dataset.
+        Calculate the accuracy score of the classifier on the given dataset.
 
         Parameters:
         - dataset: Dataset
@@ -120,25 +127,47 @@ class RandomForestClassifier:
             The accuracy score.
         """
         y_pred = self.predict(dataset)
-        accuracy = np.mean(y_pred == dataset.y)
-        return accuracy
+        return accuracy(dataset.y, y_pred)
+
 
 
 if __name__ == '__main__':
+
     from si.io.csv_file import read_csv
-    from si.model_selection.split import stratified_train_test_split
+    from si.model_selection.split import train_test_split
+    from si.metrics.accuracy import accuracy
+    
+    # read iris dataset
+    data = read_csv("\\Users\\joana\\OneDrive\\Documentos\\GitHub\\si\\datasets\\iris\\iris.csv", sep=',', features=True, label=True)
 
-    data =  "C:\\Users\\joana\\OneDrive\\Documentos\\GitHub\\si\\datasets\\iris\\iris.csv"
-    data = read_csv(data, sep=",",features=True,label=True)
-   
-    train_data, test_data = stratified_train_test_split(data, test_size=0.2, random_state=42)
+    # split dataset into train and test set
+    train_set, test_set = train_test_split(data, test_size=0.33, random_state=42)
+
+    # create random forest classifier
+    clf = RandomForestClassifier(n_estimators=10, max_depth=5, min_sample_split=2, mode='gini')
+
+    # fit classifier to train set
+    clf.fit(train_set)
+
+    # predict on test set
+    y_pred = clf.predict(test_set)
+
+    # calculate accuracy score
+    score = accuracy(test_set.y, y_pred)
+    print('Accuracy score: ', score)
+
+    # compare to sklearn
+
+    from sklearn.ensemble import RandomForestClassifier as skRandomForestClassifier
+    
+    clf1 = skRandomForestClassifier(n_estimators=10, max_depth=5, min_samples_split=2)
+    clf1.fit(train_set.X, train_set.y)
+    y_pred = clf1.predict(test_set.X)
+    score = accuracy(test_set.y, clf1.predict(test_set.X))
+    print('Accuracy score sklearn: ', score)
 
 
-    random_forest = RandomForestClassifier(n_estimators=10, max_features=None, min_sample_split=2,
-                                       max_depth=None, mode='gini', seed=42)
-    random_forest.fit(train_data)
 
-    score = random_forest.score(test_data)
-    print(f"Accuracy on test set: {score}")
-    score = random_forest.score(train_data)
-    print(f"Accuracy on train set: {score}")
+
+
+
