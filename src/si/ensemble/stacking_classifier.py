@@ -91,3 +91,31 @@ if __name__ == '__main__':
     exercise = StackingClassifier(models, final_model)
     exercise.fit(train_data)
     print(exercise.score(test_data))
+
+    # compare with sklearn
+    from sklearn.ensemble import StackingClassifier as SklearnStackingClassifier
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.metrics import accuracy_score
+
+    # KNN
+    knn = KNeighborsClassifier(n_neighbors=3)
+
+    # Logistic Regression
+    LG = LogisticRegression(penalty='l2', C=1, solver='lbfgs', max_iter=1000)
+
+    # Decision Tree
+    DT = DecisionTreeClassifier(min_samples_split=3, max_depth=3, criterion='gini')
+
+    # Final Model (Choose a different model as the final model)
+    final_model = LogisticRegression(penalty='l2', C=1, solver='lbfgs', max_iter=1000)
+
+    # Initialize StackingClassifier
+    models = [('knn', knn), ('LG', LG), ('DT', DT)]
+    sklearn = SklearnStackingClassifier(estimators=models, final_estimator=final_model)
+    sklearn.fit(train_data.X, train_data.y)
+    y_pred = sklearn.predict(test_data.X)
+    print(accuracy_score(test_data.y, y_pred))
+
+    

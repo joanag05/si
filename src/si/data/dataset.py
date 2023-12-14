@@ -262,3 +262,23 @@ if __name__ == '__main__':
     print(dataset.get_min())
     print(dataset.get_max())
     print(dataset.summary())
+
+#test dropna, fillna, remove_by_index
+
+    X = np.array([[1, 2, 3], [4, 5, 6], [np.nan, 8, 9]])
+    y = np.array([1, 2, 3])
+    features = np.array(['a', 'b', 'c'])
+    label = 'y'
+    dataset = Dataset(X, y, features, label)
+    print(dataset.X)
+    print()
+    print(dataset.y)
+    print(dataset.dropna().X)
+    print()
+    print(dataset.dropna().y)
+    print()
+    print(dataset.fillna(0).X)
+    print()
+    print(dataset.fillna(0).y)
+    print()
+    print(dataset.remove_by_index(0).X)

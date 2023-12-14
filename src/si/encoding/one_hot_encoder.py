@@ -127,7 +127,7 @@ if __name__ == '__main__':
     data = ['abc', 'def', 'ghi', 'jkl', 'yz']
     
    
-    encoder = OneHotEncoder(padder='_')
+    encoder = OneHotEncoder()
     encoded = encoder.fit_transform(data)
     decoded = encoder.inverse_transform(encoded)
 
@@ -136,6 +136,8 @@ if __name__ == '__main__':
     print("Encoder Encoded:\n", encoded)
     print()
     print("Encoder Decoded:\n", decoded)
+    print()
+    print("Inverse Transform", encoder.inverse_transform(encoded))
 
     # compare with sklearn
 
