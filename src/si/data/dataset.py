@@ -221,15 +221,24 @@ class Dataset:
 
     def fillna(self, value):
         """
-        Fills missing values in the dataset with the specified value.
+        Fill missing values in the dataset with the specified value.
 
         Parameters:
-            value (float or int): The value to fill the missing values with.
+            value (float or str): The value to fill the missing values with. 
+                If 'mean', missing values will be filled with the mean of each column.
+                If 'median', missing values will be filled with the median of each column.
+                Otherwise, missing values will be filled with the specified value.
 
         Returns:
             self: The modified dataset object.
+
         """
-        self.X = np.nan_to_num(self.X, nan=value)
+        if value == 'mean':
+            self.X = np.where(np.isnan(self.X), np.nanmean(self.X, axis=0), self.X)
+        elif value == 'median':
+            self.X = np.where(np.isnan(self.X), np.nanmedian(self.X, axis=0), self.X)
+        else:
+            self.X = np.where(np.isnan(self.X), value, self.X)
         return self
     
     def remove_by_index(self, index):
