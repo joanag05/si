@@ -121,3 +121,31 @@ if __name__ == "__main__":
 
     print("Predicted classes:", predictions)
     print("Classification error:", model.score(dataset))
+
+    # test the model on a new sample
+    new_sample = np.array([[1, 0, 0]])
+    new_dataset = Dataset(new_sample)
+    new_predictions = model.predict(new_dataset)
+
+    print("New sample:", new_sample)
+    print("Predicted class:", new_predictions[0])
+    print("Classification error:", model.score(dataset))
+
+    #show me using sklearn
+    print("Using sklearn:")
+    print("--------------")
+    from sklearn.naive_bayes import CategoricalNB as skCategoricalNB
+
+    sk_model = skCategoricalNB(alpha=1)
+    sk_model.fit(X, y)
+
+    sk_predictions = sk_model.predict(X)
+    sk_error = sk_model.score(X, y)
+
+    print("Predicted classes:", sk_predictions)
+    print("Classification error:", sk_error)
+
+
+
+
+
