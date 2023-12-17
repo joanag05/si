@@ -40,6 +40,9 @@ def randomized_search_cv(model, dataset, hyperparameter_grid, scoring=None, cv=5
         The results of the grid search cross validation. Includes the scores, hyperparameters,
         best hyperparameters, and best score.
     """
+
+    # check if hyperparameters are valid
+
     for parameter in hyperparameter_grid:
             if not hasattr(model, parameter):
                 raise AttributeError(f"Model {model} does not have parameter {parameter}.") 
@@ -49,7 +52,7 @@ def randomized_search_cv(model, dataset, hyperparameter_grid, scoring=None, cv=5
     for _ in range(n_iter):
         parameters = {}
         for key, values in hyperparameter_grid.items():
-            # Choose a different random value for each hyperparameter
+            # Choose a random value for each hyperparameter
             parameters[key] = np.random.choice(values)
 
         # Set the hyperparameters in the model
@@ -59,7 +62,7 @@ def randomized_search_cv(model, dataset, hyperparameter_grid, scoring=None, cv=5
         # Cross validate the model
         score = k_fold_cross_validation(model=model, dataset=dataset, scoring=scoring, cv=cv)
 
-        # Record the score and hyperparameters for this iteration
+        # Record the mean of the scores and hyperparameters for this iteration
         results['scores'].append(np.mean(score))
         results['hyperparameters'].append(parameters)
 

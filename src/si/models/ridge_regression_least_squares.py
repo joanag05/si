@@ -71,6 +71,8 @@ class RidgeRegressionLeastSquares:
         self : RidgeRegressionLeastSquares
             Returns self.
         """
+        # scale the input features if needed
+
         if self.scale:
             self.mean = np.nanmean(dataset.X, axis=0)
             self.std = np.nanstd(dataset.X, axis=0)
@@ -78,7 +80,7 @@ class RidgeRegressionLeastSquares:
         else:
             X = dataset.X
 
-        # add the intercept term
+        # add the intercept term to X (add colums of 1s to the FIRST column of X)
 
         X = np.c_[np.ones(X.shape[0]), X]
 
@@ -92,6 +94,8 @@ class RidgeRegressionLeastSquares:
         # compute the model parameters theta and theta_zero
 
         theta_vector = np.linalg.inv(X.T.dot(X) + penalty_m).dot(X.T).dot(dataset.y)
+
+        # set the intercept term to theta_zero and the rest to theta
         self.theta_zero = theta_vector[0]
         self.theta = theta_vector[1:]
 

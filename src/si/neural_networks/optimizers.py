@@ -74,11 +74,14 @@ class Adam(Optimizer):
     """
 
     def __init__(self, learning_rate: float, beta_1: float = 0.9, beta_2: float = 0.999, epsilon: float = 1e-8):
-
+        
+        # arguments
         self.learning_rate = learning_rate
         self.beta_1 = beta_1
         self.beta_2 = beta_2
         self.epsilon = epsilon
+
+        # estimated parameters
         self.m = None
         self.v = None
         self.t = 0
@@ -121,6 +124,12 @@ if __name__ == '__main__':
     w = np.array([1, 2, 3])
     grad_loss_w = np.array([1, 2, 3])
     print(adam.update(w, grad_loss_w))
+
+
+
+
+
+
 
 
 

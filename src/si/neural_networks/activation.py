@@ -233,7 +233,7 @@ class SoftmaxActivation(ActivationLayer):
         Returns
         -------
         numpy.ndarray
-            The derivative of the activation function (Softmax derivative is used during backpropagation).
+            The derivative of the activation function
         """
         return self.activation_function(input) * (1 - self.activation_function(input))
 

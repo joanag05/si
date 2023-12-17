@@ -43,12 +43,12 @@ class StackingClassifier:
         :param dataset: Dataset object to predict the labels of.
         :return: the final model prediction
         """
-        # gets the model predictions
+        # gets the intial model predictions
         predictions = []
         for model in self.models:
             predictions.append(model.predict(dataset))
 
-        # gets the final model previsions
+        # gets the final model prediction
         y_pred = self.final_model.predict(Dataset(np.array(predictions).T, dataset.y))
 
         return y_pred

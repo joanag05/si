@@ -45,7 +45,7 @@ class OneHotEncoder:
         unique_chars = set(''.join(data))
         self.alphabet = sorted(unique_chars)
         
-        self.char_to_index = {char: index for index, char in enumerate(self.alphabet)}
+        self.char_to_index = {char: index for index, char in enumerate(self.alphabet)} 
         self.index_to_char = {index: char for char, index in self.char_to_index.items()}
 
         # add padding character to alphabet if not already present
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     from sklearn.preprocessing import OneHotEncoder as SklearnOneHotEncoder
 
     # create a dataset
-    data = ['abc', 'def', 'ghi', 'jkl', 'yz']
+    data = ['abc', 'def', 'ghi', 'jkl', 'yz', 'lk']
     
    
     encoder = OneHotEncoder()

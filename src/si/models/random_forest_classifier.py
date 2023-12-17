@@ -104,15 +104,19 @@ class RandomForestClassifier:
         - np.ndarray
             An array of predicted class labels.
         """
+        #  predict for each tree
+        
         y_pred = [None] * self.n_estimators
         for i, (features_idx, tree) in enumerate(self.trees):
             y_pred[i] = tree.predict(Dataset(dataset.X[:, features_idx], dataset.y))
-        
-        most_frequent = []
-        for z in zip(*y_pred):
-            most_frequent.append(max(set(z), key=z.count))
 
-        return np.array(most_frequent)
+        # most common prediction for each sample
+        
+        most_common = []
+        for z in zip(*y_pred):
+            most_common.append(max(set(z), key=z.count))
+
+        return np.array(most_common)
 
     def score(self, dataset: Dataset) -> float:
         """

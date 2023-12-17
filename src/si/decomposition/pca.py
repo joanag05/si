@@ -51,13 +51,20 @@ class PCA:
         self : object
         """
         self.mean = np.mean(dataset.X, axis=0)
+
+        # substraction the mean from the dataset
         X = dataset.X - self.mean
+
+        # calculate de svd
 
         U, S, V = svd(X, full_matrices=False)
 
         self.components = V[:self.n_components]
+        
+        # EV = S2/(n-1) 
 
         self.explained_variance = S[:self.n_components] ** 2 / (len(X) - 1)
+
         return self
     
     def transform (self, dataset: Dataset) -> Dataset:
@@ -76,7 +83,12 @@ class PCA:
         if self.components is None:
             raise ValueError("Model not fitted")
         
+        # center the data
+        
         X = dataset.X - self.mean
+        
+        # calculate  the reduced X
+        
         X = np.dot(X, np.transpose(self.components))
         return X
     

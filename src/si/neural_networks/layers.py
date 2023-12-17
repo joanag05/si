@@ -214,8 +214,10 @@ class DropoutLayer(Layer):
     def __init__(self, probability):
         super().__init__()
 
+        # arguments for the layer
         self.probability = probability
 
+        # estimated parameters
         self.input = None
         self.mask = None
         self.output = None
@@ -299,7 +301,7 @@ if __name__ == "__main__":
     print("x:", x)
     # create the dropout layer
     dropout_layer = DropoutLayer(0.5)
-    # test the dropout layer
+    
     print("output training:", dropout_layer.forward_propagation(x, training=True))
     # print the mask
     print("mask:", dropout_layer.mask)

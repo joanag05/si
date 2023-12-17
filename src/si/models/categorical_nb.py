@@ -2,106 +2,97 @@ import numpy as np
 from si.data.dataset import Dataset
 from si.metrics.accuracy import accuracy
 
-class CategoricalNB:
-    def __init__(self, smoothing=1.0):
-        """
-        Custom implementation of Categorical Naive Bayes for discrete/categorical data.
 
-        Parameters:
-        -----------
-        smoothing : float, default=1.0
-            Laplace smoothing to avoid zero probabilities.
-        """
+class CategoricalNB:
+    """
+    Categorical Naive Bayes classifier.
+
+    Parameters:
+    - smoothing (float): The smoothing parameter for Laplace smoothing. Default is 1.0.
+
+    Attributes:
+    - smoothing (float): The smoothing parameter for Laplace smoothing.
+    - class_prior (ndarray): The prior probabilities of each class.
+    - feature_probs (ndarray): The conditional probabilities of each feature given each class.
+    """
+
+    def __init__(self, smoothing=1.0):
         self.smoothing = smoothing
         self.class_prior = None
         self.feature_probs = None
-        self.num_classes = 0
 
-    def fit(self, dataset):
+    def fit(self, dataset: Dataset) -> 'CategoricalNB':
         """
-        Fit the model to the given dataset.
+        Fit the CategoricalNB model to the given dataset.
 
         Parameters:
-        -----------
-        dataset : Dataset
-            The dataset to fit the model to.
+        - dataset (Dataset): The training dataset.
+
+        Returns:
+        - self (CategoricalNB): The fitted CategoricalNB model.
         """
-        X, y = dataset.X, dataset.y
-        n_samples, n_features = X.shape
-        n_classes = len(np.unique(y))
+        n_samples, n_features = dataset.shape()
+        n_classes = len(dataset.get_classes())
+
+        self.class_prior = np.zeros(n_classes)
+        self.feature_probs = np.zeros((n_classes, n_features))
 
         class_counts = np.zeros(n_classes)
         feature_counts = np.zeros((n_classes, n_features))
-        class_prior = np.zeros(n_classes)
+
+        # apllying laplace smoothing to avoid zero probabilities
 
         for i in range(n_classes):
-            class_counts[i] = np.sum(y == i)
+            class_samples = dataset.y == i
+            class_counts[i] = np.sum(class_samples)
+            feature_counts[i] = np.sum(dataset.X[class_samples], axis=0)
 
-        for i in range(n_classes):
-            for j in range(n_features):
-                feature_counts[i, j] = np.sum(X[y == i, j])
-
-        class_prior = class_counts / n_samples
-
-        feature_counts += self.smoothing
-        class_counts += self.smoothing * n_features
-
-        feature_probs = feature_counts / class_counts[:, np.newaxis]
-
-        self.class_prior = class_prior
-        self.feature_probs = feature_probs
-        self.num_classes = n_classes
+        # compute the class prior and feature probabilities
+        self.class_prior = class_counts / n_samples
+        self.feature_probs = (feature_counts + self.smoothing) / (class_counts.reshape(-1, 1) + self.smoothing * n_features)
 
         return self
 
-    def predict(self, dataset):
+    def predict(self, dataset: Dataset) -> np.ndarray:
         """
-        Predict the class labels for a given set of samples.
+        Predict the class labels for the given dataset.
 
         Parameters:
-        -----------
-        dataset : Dataset
-            The dataset to make predictions on.
+        - dataset (Dataset): The dataset to make predictions on.
 
         Returns:
-        --------
-        predictions : array-like of shape (n_samples,)
-            An array of predicted class labels.
+        - predictions (ndarray): The predicted class labels.
         """
-        X = dataset.X
-        n_samples, n_features = X.shape
-        n_classes = self.num_classes
+        predictions = []
 
-        predictions = np.zeros(n_samples, dtype=int)
+        # probability of each class for each sample
+        
+        for sample in dataset.X:
+            class_probs = []
+            for i in range(len(self.class_prior)):
+                class_probs.append(
+                    np.prod(
+                        sample * self.feature_probs[i] + (1 - sample) * (1 - self.feature_probs[i])
+                    ) * self.class_prior[i]
+                )
+            # class with the highest probability as the prediction class
+            predictions.append(np.argmax(class_probs))
+        return np.array(predictions)
 
-        for i in range(n_samples):
-            sample = X[i]
-            class_probs = np.zeros(n_classes)
-
-            for c in range(n_classes):
-                class_probs[c] = np.prod(sample * self.feature_probs[c] + (1 - sample) * (1 - self.feature_probs[c])) * self.class_prior[c]
-
-            predictions[i] = np.argmax(class_probs)
-
-        return predictions
-
-    def score(self, dataset):
+    def score(self, dataset: Dataset) -> float:
         """
-        Calculate the accuracy between actual values and predictions.
+        Calculate the accuracy score of the model on the given dataset.
 
         Parameters:
-        -----------
-        dataset : Dataset
-            The dataset to evaluate the model.
+        - dataset (Dataset): The dataset to evaluate the model on.
 
         Returns:
-        --------
-        error : float
-            The error between the actual values and predictions (1.0 - accuracy).
+        - score (float): The accuracy score.
         """
-        y_pred = self.predict(dataset)
-        return accuracy(dataset.y, y_pred)
-    
+        predictions = self.predict(dataset)
+        true_labels = dataset.y
+        return accuracy(true_labels, predictions)
+
     
 
 
@@ -127,7 +118,6 @@ if __name__ == "__main__":
     new_dataset = Dataset(new_sample)
     new_predictions = model.predict(new_dataset)
 
-    print("New sample:", new_sample)
     print("Predicted class:", new_predictions[0])
     print("Classification error:", model.score(dataset))
 
